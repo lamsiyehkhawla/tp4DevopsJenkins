@@ -1,0 +1,45 @@
+pipeline {
+
+  agent any
+
+  environment {
+    registry = "khawlalams/tp4"
+    registryCredential = 'dockerhub'
+    dockerImage = ''
+  }
+
+  stages {
+
+    stage('Cloning Git') {
+      steps {
+        git 'https://github.com/lamsiyehkhawla/tp4DevopsJenkins'
+      }
+    }
+
+    stage('Building image') {
+      steps {
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
+      }
+    }
+
+    stage('Publish Image') {
+      steps {
+        script {
+          docker.withRegistry('', registryCredential) {
+            dockerImage.push()
+          }
+        }
+      }
+    }
+
+    stage('Deploy image') {
+ steps {
+  sh 'docker run -d tp4:$BUILD_NUMBER'
+  }
+  }
+
+  }
+
+}
